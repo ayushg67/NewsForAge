@@ -1,0 +1,16 @@
+{
+  "source": "/Users/ayushgupta/Desktop/Claude/NewsForAge/Sources/Views/FeedView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Newsphere",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 25
+        }
+      }
+    ]
+  },
+  "version": 1
+}

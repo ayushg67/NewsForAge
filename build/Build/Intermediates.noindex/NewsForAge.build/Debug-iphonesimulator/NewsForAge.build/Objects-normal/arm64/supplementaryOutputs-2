@@ -1,0 +1,23 @@
+{
+  "/Users/ayushgupta/Desktop/Claude/NewsForAge/Sources/Services/FeedStore.swift" : {
+    "const-values" : "/Users/ayushgupta/Desktop/Claude/NewsForAge/build/Build/Intermediates.noindex/NewsForAge.build/Debug-iphonesimulator/NewsForAge.build/Objects-normal/arm64/FeedStore.swiftconstvalues",
+    "dependencies" : "/Users/ayushgupta/Desktop/Claude/NewsForAge/build/Build/Intermediates.noindex/NewsForAge.build/Debug-iphonesimulator/NewsForAge.build/Objects-normal/arm64/FeedStore.d",
+    "diagnostics" : "/Users/ayushgupta/Desktop/Claude/NewsForAge/build/Build/Intermediates.noindex/NewsForAge.build/Debug-iphonesimulator/NewsForAge.build/Objects-normal/arm64/FeedStore.dia",
+    "object" : "/Users/ayushgupta/Desktop/Claude/NewsForAge/build/Build/Intermediates.noindex/NewsForAge.build/Debug-iphonesimulator/NewsForAge.build/Objects-normal/arm64/FeedStore.o",
+    "swift-dependencies" : "/Users/ayushgupta/Desktop/Claude/NewsForAge/build/Build/Intermediates.noindex/NewsForAge.build/Debug-iphonesimulator/NewsForAge.build/Objects-normal/arm64/FeedStore.swiftdeps"
+  },
+  "/Users/ayushgupta/Desktop/Claude/NewsForAge/Sources/Services/Feeds.swift" : {
+    "const-values" : "/Users/ayushgupta/Desktop/Claude/NewsForAge/build/Build/Intermediates.noindex/NewsForAge.build/Debug-iphonesimulator/NewsForAge.build/Objects-normal/arm64/Feeds.swiftconstvalues",
+    "dependencies" : "/Users/ayushgupta/Desktop/Claude/NewsForAge/build/Build/Intermediates.noindex/NewsForAge.build/Debug-iphonesimulator/NewsForAge.build/Objects-normal/arm64/Feeds.d",
+    "diagnostics" : "/Users/ayushgupta/Desktop/Claude/NewsForAge/build/Build/Intermediates.noindex/NewsForAge.build/Debug-iphonesimulator/NewsForAge.build/Objects-normal/arm64/Feeds.dia",
+    "object" : "/Users/ayushgupta/Desktop/Claude/NewsForAge/build/Build/Intermediates.noindex/NewsForAge.build/Debug-iphonesimulator/NewsForAge.build/Objects-normal/arm64/Feeds.o",
+    "swift-dependencies" : "/Users/ayushgupta/Desktop/Claude/NewsForAge/build/Build/Intermediates.noindex/NewsForAge.build/Debug-iphonesimulator/NewsForAge.build/Objects-normal/arm64/Feeds.swiftdeps"
+  },
+  "/Users/ayushgupta/Desktop/Claude/NewsForAge/Sources/Services/NewsService.swift" : {
+    "const-values" : "/Users/ayushgupta/Desktop/Claude/NewsForAge/build/Build/Intermediates.noindex/NewsForAge.build/Debug-iphonesimulator/NewsForAge.build/Objects-normal/arm64/NewsService.swiftconstvalues",
+    "dependencies" : "/Users/ayushgupta/Desktop/Claude/NewsForAge/build/Build/Intermediates.noindex/NewsForAge.build/Debug-iphonesimulator/NewsForAge.build/Objects-normal/arm64/NewsService.d",
+    "diagnostics" : "/Users/ayushgupta/Desktop/Claude/NewsForAge/build/Build/Intermediates.noindex/NewsForAge.build/Debug-iphonesimulator/NewsForAge.build/Objects-normal/arm64/NewsService.dia",
+    "object" : "/Users/ayushgupta/Desktop/Claude/NewsForAge/build/Build/Intermediates.noindex/NewsForAge.build/Debug-iphonesimulator/NewsForAge.build/Objects-normal/arm64/NewsService.o",
+    "swift-dependencies" : "/Users/ayushgupta/Desktop/Claude/NewsForAge/build/Build/Intermediates.noindex/NewsForAge.build/Debug-iphonesimulator/NewsForAge.build/Objects-normal/arm64/NewsService.swiftdeps"
+  }
+}
