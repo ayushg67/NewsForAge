@@ -52,7 +52,7 @@ struct SearchView: View {
         searchTask?.cancel()
         searchTask = Task {
             isSearching = true
-            let found = await feedStore.search(query, bracket: settings.bracket)
+            let found = await feedStore.search(query, bracket: settings.bracket, language: settings.language, countryCode: settings.countryCode)
             if Task.isCancelled { return }
             results = found
             hasSearched = true

@@ -15,6 +15,7 @@ final class RSSParser: NSObject, XMLParserDelegate {
     private var link = ""
     private var pubDate = ""
     private var imageURL: String?
+    private var itemSource = ""   // <source> element (Google News gives the real outlet)
 
     init(source: String, category: Category) {
         self.source = source
@@ -40,7 +41,7 @@ final class RSSParser: NSObject, XMLParserDelegate {
         switch elementName {
         case "item":
             insideItem = true
-            title = ""; itemDescription = ""; link = ""; pubDate = ""; imageURL = nil
+            title = ""; itemDescription = ""; link = ""; pubDate = ""; imageURL = nil; itemSource = ""
         case "media:thumbnail", "media:content":
             // Prefer a wider image when several are offered.
             if let urlString = attributeDict["url"] {
@@ -65,6 +66,7 @@ final class RSSParser: NSObject, XMLParserDelegate {
         case "description": itemDescription += string
         case "link": link += string
         case "pubDate": pubDate += string
+        case "source": itemSource += string
         default: break
         }
     }
@@ -89,12 +91,19 @@ final class RSSParser: NSObject, XMLParserDelegate {
         let cleanedLink = link.trimmingCharacters(in: .whitespacesAndNewlines)
         guard let url = URL(string: cleanedLink), !title.isEmpty else { return }
 
+        // Google News gives "Headline - Outlet" titles plus a <source> element.
+        let outlet = itemSource.trimmingCharacters(in: .whitespacesAndNewlines)
+        var cleanTitle = title.cleanedHTML
+        if !outlet.isEmpty, cleanTitle.hasSuffix(" - \(outlet)") {
+            cleanTitle = String(cleanTitle.dropLast(outlet.count + 3))
+        }
+
         let article = Article(
-            title: title.cleanedHTML,
+            title: cleanTitle,
             summary: itemDescription.cleanedHTML,
             link: url,
             imageURL: imageURL.flatMap { URL(string: $0) },
-            source: source,
+            source: outlet.isEmpty ? source : outlet,
             category: category,
             publishedAt: Self.dateFormatter.date(from: pubDate.trimmingCharacters(in: .whitespacesAndNewlines))
         )

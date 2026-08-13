@@ -12,57 +12,87 @@ final class FeedStore {
         case idle, loading, loaded, failed(String)
     }
 
-    private(set) var articlesByCategory: [Category: [Article]] = [:]
-    private(set) var state: [Category: LoadState] = [:]
+    // Keyed by "language.category" so each language keeps its own cached feed.
+    private(set) var articlesByKey: [String: [Article]] = [:]
+    private(set) var stateByKey: [String: LoadState] = [:]
 
     private let service = NewsService()
     private let cacheURL: URL
 
+    private func key(_ category: Category, _ language: Language, _ countryCode: String?) -> String {
+        "\(language.rawValue).\(countryCode ?? "ww").\(category.rawValue)"
+    }
+
     init() {
-        let dir = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
+        // Application Support (not Caches) so iOS never purges the offline copy.
+        let dir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         cacheURL = dir.appendingPathComponent("feed-cache.json")
         loadCache()
-    }
 
-    func articles(for category: Category) -> [Article] {
-        articlesByCategory[category] ?? []
-    }
-
-    func state(for category: Category) -> LoadState {
-        state[category] ?? .idle
-    }
-
-    /// Loads a category only if it hasn't been loaded yet this session.
-    func loadIfNeeded(_ category: Category) async {
-        if case .loaded = state(for: category) { return }
-        if case .loading = state(for: category) { return }
-        await refresh(category)
-    }
-
-    func refresh(_ category: Category) async {
-        state[category] = .loading
-        let fetched = await service.articles(for: category)
-        if fetched.isEmpty && !articles(for: category).isEmpty {
-            // Keep the cached copy; surface a soft failure.
-            state[category] = .failed("Couldn't refresh — showing saved stories.")
-        } else if fetched.isEmpty {
-            state[category] = .failed("No internet connection or no stories available.")
-        } else {
-            articlesByCategory[category] = fetched
-            state[category] = .loaded
+        // One-time migration of any cache written to the old Caches location,
+        // which was keyed by bare category. Re-key it under the English language.
+        let old = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("feed-cache.json")
+        if articlesByKey.isEmpty,
+           let data = try? Data(contentsOf: old),
+           let decoded = try? JSONDecoder().decode([String: [Article]].self, from: data) {
+            for (category, value) in decoded where Category(rawValue: category) != nil {
+                articlesByKey["\(Language.english.rawValue).\(category)"] = value
+            }
             saveCache()
         }
     }
 
-    /// Searches across every feed the bracket is allowed to see.
-    func search(_ query: String, bracket: AgeBracket) async -> [Article] {
+    func articles(for category: Category, language: Language, countryCode: String?) -> [Article] {
+        articlesByKey[key(category, language, countryCode)] ?? []
+    }
+
+    /// All cached articles across the given categories for the current edition,
+    /// used as candidates for suggestions.
+    func cachedArticles(in categories: [Category], language: Language, countryCode: String?) -> [Article] {
+        categories.flatMap { articles(for: $0, language: language, countryCode: countryCode) }
+    }
+
+    func state(for category: Category, language: Language, countryCode: String?) -> LoadState {
+        stateByKey[key(category, language, countryCode)] ?? .idle
+    }
+
+    /// Loads a category only if it hasn't been loaded yet this session.
+    func loadIfNeeded(_ category: Category, language: Language, countryCode: String?) async {
+        let state = state(for: category, language: language, countryCode: countryCode)
+        if case .loaded = state { return }
+        if case .loading = state { return }
+        await refresh(category, language: language, countryCode: countryCode)
+    }
+
+    func refresh(_ category: Category, language: Language, countryCode: String?) async {
+        let k = key(category, language, countryCode)
+        stateByKey[k] = .loading
+        let fetched = await service.articles(for: category, language: language, countryCode: countryCode)
+        if fetched.isEmpty && !articles(for: category, language: language, countryCode: countryCode).isEmpty {
+            // Keep the cached copy; surface a soft failure.
+            stateByKey[k] = .failed("Couldn't refresh — showing saved stories.")
+        } else if fetched.isEmpty {
+            stateByKey[k] = .failed("No internet connection or no stories available.")
+        } else {
+            articlesByKey[k] = fetched
+            stateByKey[k] = .loaded
+            saveCache()
+        }
+    }
+
+    /// Searches across every feed the bracket is allowed to see, in the current language/country.
+    func search(_ query: String, bracket: AgeBracket, language: Language, countryCode: String?) async -> [Article] {
         let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return [] }
 
         let categories = bracket.allowedCategories
         let collected = await withTaskGroup(of: [Article].self) { group in
             for category in categories {
-                group.addTask { [service] in await service.articles(for: category) }
+                group.addTask { [service] in
+                    await service.articles(for: category, language: language, countryCode: countryCode)
+                }
             }
             var all: [Article] = []
             for await batch in group { all.append(contentsOf: batch) }
@@ -81,15 +111,11 @@ final class FeedStore {
     private func loadCache() {
         guard let data = try? Data(contentsOf: cacheURL),
               let decoded = try? JSONDecoder().decode([String: [Article]].self, from: data) else { return }
-        for (key, value) in decoded {
-            if let category = Category(rawValue: key) { articlesByCategory[category] = value }
-        }
+        articlesByKey = decoded
     }
 
     private func saveCache() {
-        let mapped = Dictionary(uniqueKeysWithValues:
-            articlesByCategory.map { ($0.key.rawValue, $0.value) })
-        guard let data = try? JSONEncoder().encode(mapped) else { return }
+        guard let data = try? JSONEncoder().encode(articlesByKey) else { return }
         try? data.write(to: cacheURL, options: .atomic)
     }
 }

@@ -15,6 +15,23 @@ enum Category: String, CaseIterable, Codable, Identifiable {
 
     var id: String { rawValue }
 
+    /// Extra keyword appended to a country search (Google News) so the category
+    /// tabs still narrow the topic. Empty for `.world` (just the country).
+    var googleKeyword: String {
+        switch self {
+        case .world: return ""
+        case .science: return "science"
+        case .technology: return "technology"
+        case .environment: return "environment"
+        case .sports: return "sports"
+        case .animals: return "wildlife"
+        case .space: return "space"
+        case .politics: return "politics"
+        case .business: return "business"
+        case .crime: return "crime"
+        }
+    }
+
     var title: String {
         switch self {
         case .world: return "World"

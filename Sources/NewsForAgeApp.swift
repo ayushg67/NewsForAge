@@ -6,6 +6,7 @@ struct NewsForAgeApp: App {
     @State private var feedStore = FeedStore()
     @State private var bookmarks = BookmarkStore()
     @State private var speech = SpeechService()
+    @State private var history = ViewHistory()
 
     var body: some Scene {
         WindowGroup {
@@ -14,6 +15,7 @@ struct NewsForAgeApp: App {
                 .environment(feedStore)
                 .environment(bookmarks)
                 .environment(speech)
+                .environment(history)
                 .tint(.blue)
         }
     }

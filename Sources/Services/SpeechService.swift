@@ -2,7 +2,8 @@ import Foundation
 import AVFoundation
 import Observation
 
-/// Reads article text aloud using the system speech synthesizer.
+/// Reads article text aloud using the system speech synthesizer, preferring the
+/// most natural (Premium ▸ Enhanced ▸ Default) voice available for the language.
 @Observable
 @MainActor
 final class SpeechService {
@@ -19,8 +20,9 @@ final class SpeechService {
         synthesizer.delegate = delegate
     }
 
-    /// Speaks the given text, replacing anything already in progress.
-    func speak(_ text: String) {
+    /// Speaks `text` in the given BCP-47 language, using `voiceIdentifier` when it
+    /// matches that language, otherwise the best-quality installed voice for it.
+    func speak(_ text: String, languageCode: String, voiceIdentifier: String?) {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
 
@@ -30,7 +32,9 @@ final class SpeechService {
         }
 
         let utterance = AVSpeechUtterance(string: trimmed)
-        utterance.rate = AVSpeechUtteranceDefaultSpeechRate
+        utterance.voice = resolveVoice(languageCode: languageCode, voiceIdentifier: voiceIdentifier)
+        // A touch below the default rate reads more naturally.
+        utterance.rate = AVSpeechUtteranceDefaultSpeechRate * 0.96
         utterance.pitchMultiplier = 1.0
         utterance.postUtteranceDelay = 0.1
         synthesizer.speak(utterance)
@@ -41,11 +45,50 @@ final class SpeechService {
         isSpeaking = false
     }
 
+    /// Chosen voice if it fits the language; otherwise the best voice for it.
+    private func resolveVoice(languageCode: String, voiceIdentifier: String?) -> AVSpeechSynthesisVoice? {
+        let prefix = String(languageCode.prefix(2)).lowercased()
+        if let id = voiceIdentifier,
+           let voice = AVSpeechSynthesisVoice(identifier: id),
+           voice.language.lowercased().hasPrefix(prefix) {
+            return voice
+        }
+        return Self.bestVoice(for: languageCode)
+    }
+
+    /// Installed voices for a language, best quality first.
+    static func voices(for languageCode: String) -> [AVSpeechSynthesisVoice] {
+        let prefix = String(languageCode.prefix(2)).lowercased()
+        return AVSpeechSynthesisVoice.speechVoices()
+            .filter { $0.language.lowercased().hasPrefix(prefix) }
+            .sorted { a, b in
+                let aExact = a.language.caseInsensitiveCompare(languageCode) == .orderedSame
+                let bExact = b.language.caseInsensitiveCompare(languageCode) == .orderedSame
+                if aExact != bExact { return aExact }
+                if a.quality.rawValue != b.quality.rawValue { return a.quality.rawValue > b.quality.rawValue }
+                return a.name < b.name
+            }
+    }
+
+    static func bestVoice(for languageCode: String) -> AVSpeechSynthesisVoice? {
+        voices(for: languageCode).first ?? AVSpeechSynthesisVoice(language: languageCode)
+    }
+
     private func configureAudioSession() {
         // Allow playback even when the silent switch is on.
         let session = AVAudioSession.sharedInstance()
         try? session.setCategory(.playback, mode: .spokenAudio, options: [.duckOthers])
         try? session.setActive(true)
+    }
+}
+
+extension AVSpeechSynthesisVoiceQuality {
+    var label: String {
+        switch self {
+        case .premium: return "Premium"
+        case .enhanced: return "Enhanced"
+        default: return "Default"
+        }
     }
 }
 

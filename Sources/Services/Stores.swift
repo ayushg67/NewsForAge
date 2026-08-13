@@ -6,6 +6,9 @@ import Observation
 final class AppSettings {
     private static let ageKey = "newsforage.age"
     private static let speechKey = "newsforage.speechEnabled"
+    private static let languageKey = "newsforage.language"
+    private static let countryKey = "newsforage.country"
+    private static let voiceKey = "newsforage.voice"
 
     var age: Int? {
         didSet {
@@ -19,11 +22,36 @@ final class AppSettings {
         didSet { UserDefaults.standard.set(speechEnabled, forKey: Self.speechKey) }
     }
 
+    /// Chosen text-to-speech voice identifier. `nil` = automatic (best quality).
+    var voiceIdentifier: String? {
+        didSet {
+            if let voiceIdentifier { UserDefaults.standard.set(voiceIdentifier, forKey: Self.voiceKey) }
+            else { UserDefaults.standard.removeObject(forKey: Self.voiceKey) }
+        }
+    }
+
+    /// The reader's language, which pins the news to that language's country.
+    var language: Language {
+        didSet { UserDefaults.standard.set(language.rawValue, forKey: Self.languageKey) }
+    }
+
+    /// The country to read news about (in `language`). `nil` = worldwide.
+    var countryCode: String? {
+        didSet {
+            if let countryCode { UserDefaults.standard.set(countryCode, forKey: Self.countryKey) }
+            else { UserDefaults.standard.removeObject(forKey: Self.countryKey) }
+        }
+    }
+
     init() {
         let stored = UserDefaults.standard.integer(forKey: Self.ageKey)
         age = stored > 0 ? stored : nil
         // Default to on for first launch; respect a stored choice thereafter.
         speechEnabled = UserDefaults.standard.object(forKey: Self.speechKey) as? Bool ?? true
+        language = UserDefaults.standard.string(forKey: Self.languageKey)
+            .flatMap(Language.init(rawValue:)) ?? .english
+        countryCode = UserDefaults.standard.string(forKey: Self.countryKey)
+        voiceIdentifier = UserDefaults.standard.string(forKey: Self.voiceKey)
     }
 
     var hasOnboarded: Bool { age != nil }

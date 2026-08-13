@@ -7,11 +7,18 @@ struct ArticleDetailView: View {
     @Environment(BookmarkStore.self) private var bookmarks
     @Environment(AppSettings.self) private var settings
     @Environment(SpeechService.self) private var speech
+    @Environment(ViewHistory.self) private var history
     @State private var showWeb = false
 
     /// The text read aloud: headline followed by the summary.
     private var spokenText: String {
         article.summary.isEmpty ? article.title : "\(article.title). \(article.summary)"
+    }
+
+    private func speak() {
+        speech.speak(spokenText,
+                     languageCode: settings.language.speechLanguage,
+                     voiceIdentifier: settings.voiceIdentifier)
     }
 
     var body: some View {
@@ -49,7 +56,7 @@ struct ArticleDetailView: View {
                 if settings.speechEnabled {
                     Button {
                         if speech.isSpeaking { speech.stop() }
-                        else { speech.speak(spokenText) }
+                        else { speak() }
                     } label: {
                         Label(speech.isSpeaking ? "Stop listening" : "Listen",
                               systemImage: speech.isSpeaking ? "stop.fill" : "speaker.wave.2.fill")
@@ -92,7 +99,8 @@ struct ArticleDetailView: View {
                 .ignoresSafeArea()
         }
         .onAppear {
-            if settings.speechEnabled { speech.speak(spokenText) }
+            history.record(article)
+            if settings.speechEnabled { speak() }
         }
         .onDisappear { speech.stop() }
     }

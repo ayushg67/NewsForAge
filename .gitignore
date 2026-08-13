@@ -1,0 +1,12 @@
+# Xcode build output
+build/
+DerivedData/
+*.xcworkspace/xcuserdata/
+xcuserdata/
+
+# macOS
+.DS_Store
+
+# Swift Package Manager
+.build/
+.swiftpm/
