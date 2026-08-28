@@ -12,40 +12,48 @@ struct OnboardingView: View {
     }
 
     var body: some View {
-        VStack(spacing: 28) {
-            Spacer()
+        ScrollView {
+            VStack(spacing: 28) {
+                VStack(spacing: 12) {
+                    Image(systemName: "globe")
+                        .font(.system(size: 64, weight: .semibold))
+                        .foregroundStyle(.blue)
+                    Text("News Sphere")
+                        .font(.largeTitle.bold())
+                    Text("Worldwide news, picked for your age.")
+                        .font(.headline)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+                .padding(.top, 40)
 
-            VStack(spacing: 12) {
-                Image(systemName: "globe")
-                    .font(.system(size: 64, weight: .semibold))
-                    .foregroundStyle(.blue)
-                Text("News Sphere")
-                    .font(.largeTitle.bold())
-                Text("Worldwide news, picked for your age.")
-                    .font(.headline)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
+                VStack(spacing: 8) {
+                    Text("How old are you?")
+                        .font(.title3.weight(.semibold))
+                    TextField("Age", text: $ageText)
+                        .keyboardType(.numberPad)
+                        .multilineTextAlignment(.center)
+                        .font(.system(size: 44, weight: .bold, design: .rounded))
+                        .frame(maxWidth: 160)
+                        .focused($focused)
+                        .submitLabel(.done)
+                }
+
+                if let age = enteredAge {
+                    BracketPreview(bracket: AgeBracket(age: age))
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
             }
-
-            VStack(spacing: 8) {
-                Text("How old are you?")
-                    .font(.title3.weight(.semibold))
-                TextField("Age", text: $ageText)
-                    .keyboardType(.numberPad)
-                    .multilineTextAlignment(.center)
-                    .font(.system(size: 44, weight: .bold, design: .rounded))
-                    .frame(maxWidth: 160)
-                    .focused($focused)
-            }
-
-            if let age = enteredAge {
-                BracketPreview(bracket: AgeBracket(age: age))
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
-            }
-
-            Spacer()
-
+            .padding(28)
+            .frame(maxWidth: .infinity)
+            .animation(.easeInOut, value: enteredAge)
+        }
+        .scrollBounceBehavior(.basedOnSize)
+        .scrollDismissesKeyboard(.interactively)
+        // Pin the button in the bottom safe area so it floats above the keyboard.
+        .safeAreaInset(edge: .bottom) {
             Button {
+                focused = false
                 settings.age = enteredAge
             } label: {
                 Text("Show me the news")
@@ -56,9 +64,18 @@ struct OnboardingView: View {
             .buttonStyle(.borderedProminent)
             .controlSize(.large)
             .disabled(enteredAge == nil)
+            .padding(.horizontal, 28)
+            .padding(.top, 8)
+            .padding(.bottom, 12)
+            .background(.bar)
         }
-        .padding(28)
-        .animation(.easeInOut, value: enteredAge)
+        // The number pad has no return key, so give it a Done button.
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button("Done") { focused = false }
+            }
+        }
         .onAppear { focused = true }
     }
 }

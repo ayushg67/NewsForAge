@@ -22,6 +22,7 @@ struct ArticleRow: View {
                 .font(.caption)
                 .foregroundStyle(.tertiary)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
 
             Thumbnail(url: article.imageURL)
         }
