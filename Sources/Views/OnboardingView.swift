@@ -19,7 +19,7 @@ struct OnboardingView: View {
                 Image(systemName: "globe")
                     .font(.system(size: 64, weight: .semibold))
                     .foregroundStyle(.blue)
-                Text("Newsphere")
+                Text("News Sphere")
                     .font(.largeTitle.bold())
                 Text("Worldwide news, picked for your age.")
                     .font(.headline)

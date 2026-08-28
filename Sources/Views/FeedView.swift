@@ -38,7 +38,7 @@ struct FeedView: View {
                 Divider()
                 content
             }
-            .navigationTitle("Newsphere")
+            .navigationTitle("News Sphere")
             .navigationBarTitleDisplayMode(.inline)
         }
         // Re-fires when the category, language, or country changes.
