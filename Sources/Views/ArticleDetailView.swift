@@ -8,6 +8,7 @@ struct ArticleDetailView: View {
     @Environment(AppSettings.self) private var settings
     @Environment(SpeechService.self) private var speech
     @Environment(ViewHistory.self) private var history
+    @Environment(ReadingStats.self) private var stats
     @State private var showWeb = false
 
     /// The text read aloud: headline followed by the summary.
@@ -100,6 +101,7 @@ struct ArticleDetailView: View {
         }
         .onAppear {
             history.record(article)
+            stats.recordRead()
             if settings.speechEnabled { speak() }
         }
         .onDisappear { speech.stop() }

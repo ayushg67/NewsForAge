@@ -6,8 +6,10 @@ struct FeedView: View {
     @Environment(AppSettings.self) private var settings
     @Environment(FeedStore.self) private var feedStore
     @Environment(ViewHistory.self) private var history
+    @Environment(ReadingStats.self) private var stats
 
     @State private var selection: Category?
+    @State private var showStats = false
 
     private var categories: [Category] { settings.bracket.allowedCategories }
 
@@ -40,6 +42,19 @@ struct FeedView: View {
             }
             .navigationTitle("News Sphere")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        showStats = true
+                    } label: {
+                        Label("\(stats.streak)", systemImage: "flame.fill")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(stats.streak > 0 ? .orange : .secondary)
+                    }
+                    .accessibilityLabel("Reading streak: \(stats.streak) days")
+                }
+            }
+            .sheet(isPresented: $showStats) { ReadingStatsView() }
         }
         // Re-fires when the category, language, or country changes.
         .task(id: "\(language.rawValue).\(countryCode ?? "ww").\(selected.rawValue)") {
